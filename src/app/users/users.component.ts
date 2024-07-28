@@ -11,11 +11,10 @@ import {
   MatRowDef,
   MatTable
 } from '@angular/material/table';
-
-const data = [
-  {id: 0, name: 'name1', username: 'username1', email: 'email1@test.com'},
-  {id: 1, name: 'name2', username: 'username2', email: 'email2@test.com'},
-];
+import {UsersService} from './users.service';
+import {User} from './user.interface';
+import {AsyncPipe} from '@angular/common';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-users',
@@ -30,13 +29,17 @@ const data = [
     MatCell,
     MatCellDef,
     MatRow,
-    MatRowDef
+    MatRowDef,
+    AsyncPipe
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersComponent {
-  protected dataSource = data;
+  protected data$: Observable<User[]> = this.usersService.getAll();
   protected displayedColumns = ['id', 'name', 'username', 'email'];
+
+  constructor(private usersService: UsersService) {
+  }
 }
