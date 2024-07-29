@@ -13,10 +13,11 @@ import {
 } from '@angular/material/table';
 import {User} from './user.interface';
 import {AsyncPipe, NgTemplateOutlet} from '@angular/common';
-import {map, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 import {UsersStore} from './users.store';
 import {EditableCellComponent} from './editable-cell/editable-cell.component';
 import {MatButton} from '@angular/material/button';
+import {provideComponentStore} from '@ngrx/component-store';
 
 @Component({
   selector: 'app-users',
@@ -40,18 +41,18 @@ import {MatButton} from '@angular/material/button';
   templateUrl: './users.component.html',
   styleUrl: './users.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: []
+  providers: [
+    provideComponentStore(UsersStore),
+  ]
 })
 export class UsersComponent {
-  protected data$: Observable<{
-    editMode: boolean,
-    user: User
-  }[]> = this.usersStore.usersList$.pipe(map(users => users.map(
-    user => ({editMode: false, user})
-  )));
-
+  protected data$: Observable<User[]> = this.usersStore.usersList$;
   protected displayedColumns = ['id', 'name', 'username', 'email', 'actions'];
 
   constructor(private usersStore: UsersStore) {
+  }
+
+  onEdit(userId: number) {
+    this.usersStore.enableEditModeOn(userId);
   }
 }

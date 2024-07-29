@@ -41,7 +41,7 @@ export class UsersTestingUtil {
     this.httpMock = TestBed.inject(HttpTestingController);
   }
 
-  mockUsersCall(data: User[]) {
+  async mockUsersCall(data: User[]) {
     let req = this.httpMock.expectOne(`${apiLink}/users`);
     expect(req.request.method).toBe('GET');
 
