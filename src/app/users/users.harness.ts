@@ -1,8 +1,9 @@
 import {ComponentHarness} from '@angular/cdk/testing';
 import {MatHeaderCellHarness, MatHeaderRowHarness, MatRowHarness} from '@angular/material/table/testing';
 import {MatButtonHarness} from '@angular/material/button/testing';
+import {MatInputHarness} from '@angular/material/input/testing';
 
-const editableCellsNumber = 4;
+const editableCellsNumber = 3;
 
 export class UsersHarness extends ComponentHarness {
   static hostSelector = 'app-users';
@@ -36,6 +37,15 @@ export class UsersHarness extends ComponentHarness {
     const cells = await rowHarness.getCells({selector: '[data-test="users-edit-column"]'});
     const button = await cells.at(0)?.getHarness(MatButtonHarness);
     button?.click();
+  }
+
+  async getInputValuesForRow(index: number) {
+    const rowHarness = await this.getRowHarness(index);
+    const cells = await rowHarness.getCells();
+    const inputsHarnesses: MatInputHarness[] = (await Promise.all(
+      cells.map(async cell => await cell.getHarnessOrNull(MatInputHarness))
+    )).filter(Boolean) as MatInputHarness[];
+    return Promise.all(inputsHarnesses.map(harness => harness.getValue()));
   }
 
   private async getRowHarness(index: number): Promise<MatRowHarness> {

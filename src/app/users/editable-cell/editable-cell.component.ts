@@ -5,6 +5,13 @@ import {MatInput} from '@angular/material/input';
 import {UsersStore} from '../users.store';
 import {AsyncPipe} from '@angular/common';
 
+const editableColumns: Record<keyof User, boolean> = {
+  id: false,
+  name: true,
+  username: true,
+  email: true,
+};
+
 @Component({
   selector: 'app-editable-cell',
   standalone: true,
@@ -20,6 +27,7 @@ import {AsyncPipe} from '@angular/common';
 export class EditableCellComponent {
   @Input({required: true}) userId!: number;
   @Input({required: true}) columnName!: keyof User;
+  editableColumns = editableColumns;
 
   protected usersDictionary$ = this.usersStore.usersDictionary$;
   protected editModeEnabledOn$ = this.usersStore.editModeEnabledOn$;

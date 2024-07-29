@@ -1,10 +1,9 @@
 @let editModeEnabled = (editModeEnabledOn$ | async) === userId;
-@if (editModeEnabled) {
+@let usersDictionary = usersDictionary$ | async;
+@if (editModeEnabled && editableColumns[columnName]) {
   <mat-form-field appearance="fill" data-test="users-cell-edit-enabled">
-    <input matInput>
+    <input matInput [value]="usersDictionary?.[userId]?.[columnName]">
   </mat-form-field>
 } @else {
-  @let usersDictionary = usersDictionary$ | async;
-
   <span>{{ usersDictionary?.[userId]?.[columnName] }}</span>
 }

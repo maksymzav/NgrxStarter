@@ -30,4 +30,14 @@ describe('UsersComponent', () => {
     expect(await util.usersHarness.isRowEditable(0)).toBe(true);
     expect(await util.usersHarness.isRowEditable(1)).toBe(false);
   });
+
+  it('displays the values for the editable row', async () => {
+    await util.mockUsersCall(UsersTestingUtil.twoUsersList);
+
+    await util.usersHarness.enableRowEditing(0);
+    const values = await util.usersHarness.getInputValuesForRow(0);
+    const {name, username, email} = UsersTestingUtil.twoUsersList[0];
+    expect(values).toEqual([name, username, email]);
+
+  });
 });
