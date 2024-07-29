@@ -8,7 +8,7 @@ import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {provideHttpClient} from '@angular/common/http';
-import {API_LINK} from './shared/tokens/api-link.token';
+import {API_LINK} from '@data-access/shared';
 import {environment} from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {

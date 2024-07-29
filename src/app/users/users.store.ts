@@ -2,8 +2,8 @@ import {Injectable} from '@angular/core';
 import {ComponentStore, OnStoreInit} from '@ngrx/component-store';
 import {User} from './types/user.interface';
 import {exhaustMap, Observable, Subscription, tap, withLatestFrom} from 'rxjs';
-import {UsersService} from './users.service';
 import {createEntityAdapter, EntityAdapter, EntityState, Update} from '@ngrx/entity';
+import {UsersService} from '@data-access/users';
 
 export interface UsersList extends EntityState<User> {}
 

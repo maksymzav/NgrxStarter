@@ -3,8 +3,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "@data-access": [
-        "./dist/data-access"
+      "@data-access/*": [
+        "./dist/data-access/*"
       ]
     },
     "outDir": "./dist/out-tsc",

@@ -2,7 +2,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {UsersComponent} from '../../components/users/users.component';
 import {provideHttpClient} from '@angular/common/http';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
-import {API_LINK} from '../../../shared/tokens/api-link.token';
+import {API_LINK} from '@data-access/shared';
 import {provideNoopAnimations} from '@angular/platform-browser/animations';
 import {getRandomInteger} from '../../../shared/utils/get-random-integer';
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
