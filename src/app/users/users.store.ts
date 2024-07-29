@@ -1,30 +1,37 @@
 import {Injectable} from '@angular/core';
 import {ComponentStore, OnStoreInit} from '@ngrx/component-store';
-import {User} from './user.interface';
-import {Observable, Subscription, tap} from 'rxjs';
+import {User} from './types/user.interface';
+import {exhaustMap, Observable, Subscription, tap, withLatestFrom} from 'rxjs';
 import {UsersService} from './users.service';
-import {createEntityAdapter, Dictionary, EntityAdapter, EntityState} from '@ngrx/entity';
+import {createEntityAdapter, EntityAdapter, EntityState, Update} from '@ngrx/entity';
 
-export interface UsersState extends EntityState<User> {
-  editModeEnabledOn: number | null;
+export interface UsersList extends EntityState<User> {}
+
+export interface UsersState {
+  editedUser: User | null;
+  users: UsersList,
 }
 
 const adapter: EntityAdapter<User> = createEntityAdapter();
 const selectors = adapter.getSelectors();
 
-const initialState: UsersState = adapter.getInitialState({
-  editModeEnabledOn: null,
-});
+const initialState: UsersState = {
+  editedUser: null,
+  users: adapter.getInitialState(),
+};
 
 @Injectable()
 export class UsersStore extends ComponentStore<UsersState> implements OnStoreInit {
   usersList$: Observable<User[]> = this.getUsersListSelector();
-  usersDictionary$: Observable<Dictionary<User>> = this.getUsersDictionarySelector();
-  editModeEnabledOn$: Observable<number | null> = this.getEditModeEnabledUserSelector();
+  editedUser$: Observable<User | null> = this.getEditedUserSelector();
 
   setUsersList: (usersList: User[]) => Subscription = this.getUsersListUpdater();
+  enableEditModeOn: (user: User | null) => Subscription = this.getEditModeEnabledUserUpdater();
+  patchEditedUser: (update: Partial<User>) => Subscription = this.getEditedUserUpdater();
+
   fetchUsersList = this.getFetchAllUsersEffect();
-  enableEditModeOn: (userId: number) => Subscription = this.getEditModeEnabledUserUpdater();
+  updateUser = this.getUpdateUserEffect();
+
 
   constructor(private usersService: UsersService) {
     super(initialState);
@@ -36,25 +43,44 @@ export class UsersStore extends ComponentStore<UsersState> implements OnStoreIni
 
 
   private getUsersListSelector() {
-    return this.select<User[]>((state) => selectors.selectAll(state));
+    return this.select<User[]>((state) => selectors.selectAll(state.users));
   }
 
-  private getUsersDictionarySelector() {
-    return this.select<Dictionary<User>>((state) => selectors.selectEntities(state));
-  }
-
-  private getEditModeEnabledUserSelector() {
-    return this.select<number | null>(({editModeEnabledOn}) => editModeEnabledOn);
+  private getEditedUserSelector() {
+    return this.select<User | null>(({editedUser}) => editedUser);
   }
 
   private getUsersListUpdater() {
-    return this.updater<User[]>((state: UsersState, usersList: User[]) => adapter.setAll(usersList, state));
+    return this.updater<User[]>((state: UsersState, usersList: User[]) => {
+        return {
+          ...state,
+          users: adapter.setAll(usersList, state.users),
+        };
+      }
+    );
+  }
+
+  private getUsersEntityStateUpdater() {
+    return this.updater<UsersList>((state: UsersState, usersListEntity: UsersList) => {
+        return {
+          ...state,
+          users: usersListEntity,
+        };
+      }
+    );
   }
 
   private getEditModeEnabledUserUpdater() {
-    return this.updater<number | null>((state: UsersState, userId: number | null) => ({
+    return this.updater<User | null>((state: UsersState, editedUser: User | null) => ({
       ...state,
-      editModeEnabledOn: userId,
+      editedUser,
+    }));
+  }
+
+  private getEditedUserUpdater() {
+    return this.updater<Partial<User>>((state: UsersState, userPatch) => ({
+      ...state,
+      editedUser: Object.assign({...state.editedUser, ...userPatch}),
     }));
   }
 
@@ -64,6 +90,23 @@ export class UsersStore extends ComponentStore<UsersState> implements OnStoreIni
         this.setUsersList(users);
       }),
     ));
+  }
+
+  private getUpdateUserEffect() {
+    return this.effect<void>(
+      (trigger$) => trigger$.pipe(
+        withLatestFrom(this.state$),
+        exhaustMap(([, state]) => this.usersService.updateUser(state.editedUser as User).pipe(
+          tap({
+            next: (user) => {
+              const update: Update<User> = {id: user.id, changes: user};
+              const updateEntityState = this.getUsersEntityStateUpdater();
+              updateEntityState(adapter.updateOne(update, state.users));
+              this.enableEditModeOn(null);
+            }
+          })),
+        )
+      ));
   }
 
 

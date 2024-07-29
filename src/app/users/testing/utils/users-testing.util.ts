@@ -1,13 +1,13 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {UsersComponent} from '../../users.component';
+import {UsersComponent} from '../../components/users/users.component';
 import {provideHttpClient} from '@angular/common/http';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {API_LINK} from '../../../shared/tokens/api-link.token';
 import {provideNoopAnimations} from '@angular/platform-browser/animations';
-import {UsersHarness} from '../../users.harness';
 import {getRandomInteger} from '../../../shared/utils/get-random-integer';
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
-import {User} from '../../user.interface';
+import {User} from '../../types/user.interface';
+import {UsersHarness} from '../users.harness';
 
 const apiLink = 'myApi' + getRandomInteger();
 
@@ -46,6 +46,14 @@ export class UsersTestingUtil {
     expect(req.request.method).toBe('GET');
 
     req.flush(data);
+    this.httpMock.verify();
+  }
+
+  async mockUpdateUserCall(userId: number, flushData: Partial<User> = {}) {
+    let req = this.httpMock.expectOne(`${apiLink}/users/${userId}`);
+    expect(req.request.method).toBe('PUT');
+
+    req.flush(flushData);
     this.httpMock.verify();
   }
 }

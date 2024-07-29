@@ -1,4 +1,4 @@
-import {UsersTestingUtil} from './testing/utils/users-testing.util';
+import {UsersTestingUtil} from '../../testing/utils/users-testing.util';
 
 describe('UsersComponent', () => {
   let util: UsersTestingUtil;
@@ -38,6 +38,27 @@ describe('UsersComponent', () => {
     const values = await util.usersHarness.getInputValuesForRow(0);
     const {name, username, email} = UsersTestingUtil.twoUsersList[0];
     expect(values).toEqual([name, username, email]);
+  });
 
+  it('updates the user when edited data is saved', async () => {
+    const updatedUserIndex = 0;
+    await util.mockUsersCall(UsersTestingUtil.twoUsersList);
+    const [newName, newUsername, newEmail] = ['updated name', 'updated username', 'updated@test.com'];
+
+    await util.usersHarness.enableRowEditing(updatedUserIndex);
+    await util.usersHarness.setInputValuesForRow(updatedUserIndex, [newName, newUsername, newEmail]);
+    await util.usersHarness.saveRowChanges(updatedUserIndex);
+
+    await util.mockUpdateUserCall(UsersTestingUtil.twoUsersList[updatedUserIndex].id, {
+      id: UsersTestingUtil.twoUsersList[updatedUserIndex].id,
+      name: newName,
+      username: newUsername,
+      email: newEmail,
+    })
+    const firstRowData = await util.usersHarness.getCellsDataForRow(updatedUserIndex);
+    const secondRowData = await util.usersHarness.getCellsDataForRow(1);
+
+    expect(firstRowData).toEqual(['0', newName, newUsername, newEmail, 'Edit']);
+    expect(secondRowData).toEqual(['1', 'api-name2', 'api-username2', 'api-email2@test.com', 'Edit']);
   });
 });

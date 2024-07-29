@@ -3,7 +3,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {ReactiveFormsModule} from '@angular/forms';
 import {HomeComponent} from './home.component';
 import {CommonModule} from '@angular/common';
-import {UsersComponent} from '../users/users.component';
+import {UsersComponent} from '../users/components/users/users.component';
 
 @NgModule({
   imports: [

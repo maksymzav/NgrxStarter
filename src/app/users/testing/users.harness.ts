@@ -33,10 +33,11 @@ export class UsersHarness extends ComponentHarness {
 
 
   async enableRowEditing(index: number): Promise<void> {
-    const rowHarness = await this.getRowHarness(index);
-    const cells = await rowHarness.getCells({selector: '[data-test="users-edit-column"]'});
-    const button = await cells.at(0)?.getHarness(MatButtonHarness);
-    button?.click();
+    return this.clickActionsButtonOnRow(index);
+  }
+
+  async saveRowChanges(index: number): Promise<void> {
+    return this.clickActionsButtonOnRow(index);
   }
 
   async getInputValuesForRow(index: number) {
@@ -46,6 +47,24 @@ export class UsersHarness extends ComponentHarness {
       cells.map(async cell => await cell.getHarnessOrNull(MatInputHarness))
     )).filter(Boolean) as MatInputHarness[];
     return Promise.all(inputsHarnesses.map(harness => harness.getValue()));
+  }
+
+  async setInputValuesForRow(index: number, [newName, newUsername, newEmail]: string[]) {
+    const rowHarness = await this.getRowHarness(index);
+    const cells = await rowHarness.getCells();
+    const [nameHarness, usernameHarness, emailHarness]: MatInputHarness[] = (await Promise.all(
+      cells.map(async cell => await cell.getHarnessOrNull(MatInputHarness))
+    )).filter(Boolean) as MatInputHarness[];
+    await nameHarness.setValue(newName);
+    await usernameHarness.setValue(newUsername);
+    await emailHarness.setValue(newEmail);
+  }
+
+  private async clickActionsButtonOnRow(index: number){
+    const rowHarness = await this.getRowHarness(index);
+    const cells = await rowHarness.getCells({selector: '[data-test="users-actions-column"]'});
+    const button = await cells.at(0)?.getHarness(MatButtonHarness);
+    button?.click();
   }
 
   private async getRowHarness(index: number): Promise<MatRowHarness> {

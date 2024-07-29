@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {
   MatCell,
   MatCellDef,
@@ -11,11 +11,11 @@ import {
   MatRowDef,
   MatTable
 } from '@angular/material/table';
-import {User} from './user.interface';
+import {User} from '../../types/user.interface';
 import {AsyncPipe, NgTemplateOutlet} from '@angular/common';
-import {Observable} from 'rxjs';
-import {UsersStore} from './users.store';
-import {EditableCellComponent} from './editable-cell/editable-cell.component';
+import {Observable, Subscription} from 'rxjs';
+import {UsersStore} from '../../users.store';
+import {EditableCellComponent} from '../editable-cell/editable-cell.component';
 import {MatButton} from '@angular/material/button';
 import {provideComponentStore} from '@ngrx/component-store';
 
@@ -45,14 +45,26 @@ import {provideComponentStore} from '@ngrx/component-store';
     provideComponentStore(UsersStore),
   ]
 })
-export class UsersComponent {
+export class UsersComponent implements OnDestroy {
   protected data$: Observable<User[]> = this.usersStore.usersList$;
   protected displayedColumns = ['id', 'name', 'username', 'email', 'actions'];
+  protected editedUser$ = this.usersStore.editedUser$;
+  private subscription = new Subscription();
 
   constructor(private usersStore: UsersStore) {
   }
 
-  onEdit(userId: number) {
-    this.usersStore.enableEditModeOn(userId);
+  onEdit(user: User) {
+    const subscription = this.usersStore.enableEditModeOn(user);
+    this.subscription.add(subscription);
+  }
+
+  onSave() {
+    const subscription = this.usersStore.updateUser();
+    this.subscription.add(subscription);
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }
